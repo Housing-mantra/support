@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Check Ticket Status - Helpdesk Support</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#254798", // Deep blue from the "Create New Ticket" button
+                        secondary: "#EFF3FC", // Light blue background for active nav item
+                        "background-light": "#F3F5FA", // Main content background
+                        "background-dark": "#0F172A", // Dark mode background
+                        "surface-light": "#FFFFFF", // White cards
+                        "surface-dark": "#1E293B", // Dark mode cards
+                        "text-main-light": "#111827",
+                        "text-main-dark": "#F9FAFB",
+                        "text-sub-light": "#6B7280",
+                        "text-sub-dark": "#9CA3AF",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        'xl': '0.75rem',
+                        '2xl': '1rem',
+                    },
+                },
+            },
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark h-screen overflow-hidden flex">
+    <aside
+        class="w-64 bg-surface-light dark:bg-surface-dark border-r border-gray-200 dark:border-gray-700 flex flex-col justify-between flex-shrink-0 z-20 relative">
+        <div class="flex-1 flex flex-col">
+            <div class="h-20 flex items-center px-6 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
+                <div class="flex items-center gap-3 w-full justify-center">
+                    <img src="/assets/images/shubham-logo.png" alt="Shubham Logo" class="h-12 w-auto object-contain">
+                </div>
+            </div>
+            <nav class="p-4 space-y-1 flex-1 overflow-y-auto">
+                <a class="flex items-center px-4 py-3 text-text-sub-light dark:text-text-sub-dark hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                    href="/">
+                    <span class="material-icons-outlined mr-3">home</span>
+                    Home
+                </a>
+                <a class="flex items-center px-4 py-3 text-text-sub-light dark:text-text-sub-dark hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                    href="#" onclick="handleCreateTicketClick(event)">
+                    <span class="material-icons-outlined mr-3">add_box</span>
+                    Create Ticket
+                </a>
+                <a class="flex items-center px-4 py-3 bg-secondary dark:bg-blue-900/40 text-primary dark:text-blue-300 rounded-lg font-medium transition-colors"
+                    href="/check-status.html">
+                    <span class="material-icons-outlined mr-3">fact_check</span>
+                    Check Status
+                </a>
+                <div class="pt-4 pb-2">
+                    <div class="h-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
+                </div>
+                <a class="flex items-center px-4 py-3 text-text-sub-light dark:text-text-sub-dark hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                    href="#">
+                    <span class="material-icons-outlined mr-3">menu_book</span>
+                    Knowledge Base
+                </a>
+                <a class="flex items-center px-4 py-3 text-text-sub-light dark:text-text-sub-dark hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                    href="#">
+                    <span class="material-icons-outlined mr-3">policy</span>
+                    IT Policy
+                </a>
+                <a class="flex items-center px-4 py-3 text-text-sub-light dark:text-text-sub-dark hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                    href="#">
+                    <span class="material-icons-outlined mr-3">mail_outline</span>
+                    Contact Support
+                </a>
+            </nav>
+        </div>
+    </aside>
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <header
+            class="h-20 bg-surface-light dark:bg-surface-dark border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-8 flex-shrink-0 z-10">
+            <div>
+                <h1 class="text-lg font-bold text-gray-900 dark:text-white">Check Ticket Status</h1>
+                <p class="text-xs text-text-sub-light dark:text-text-sub-dark hidden sm:block">Track your requests
+                    without logging in
+                </p>
+            </div>
+            <div class="flex items-center space-x-6">
+                <button
+                    class="flex items-center text-text-sub-light dark:text-text-sub-dark hover:text-gray-900 dark:hover:text-white text-sm font-medium transition-colors">
+                    <span class="material-icons-outlined text-lg mr-1.5">help_outline</span>
+                    Help Center
+                </button>
+                <div class="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block"
+                        id="userName">Guest</span>
+                    <div onclick="toggleAuthModal()"
+                        class="h-9 w-9 bg-green-700 text-white rounded-full flex items-center justify-center text-sm font-medium shadow-sm cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                        <img id="userAvatar" src="https://ui-avatars.com/api/?name=Guest&background=10b981" alt="Avatar"
+                            class="rounded-full h-full w-full">
+                    </div>
+                </div>
+            </div>
+        </header>
+        <main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-6 md:p-10">
+            <div class="max-w-4xl mx-auto">
+                <div
+                    class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm p-8 md:p-10 transition-colors duration-300">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <button onclick="switchTab('employee')" id="tabEmployee"
+                            class="flex items-center justify-center h-14 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 text-primary dark:text-blue-300 font-semibold shadow-sm transition-all">
+                            Search by Employee ID
+                        </button>
+                        <button onclick="switchTab('ticket')" id="tabTicket"
+                            class="flex items-center justify-center h-14 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-text-sub-light dark:text-text-sub-dark hover:bg-slate-100 dark:hover:bg-slate-700 transition-all font-medium">
+                            Search by Ticket ID
+                        </button>
+                    </div>
+
+                    <form id="searchForm" onsubmit="handleSearch(event)" class="flex flex-col md:flex-row gap-4">
+                        <div class="relative flex-grow">
+                            <input id="searchInput"
+                                class="w-full h-14 pl-5 pr-4 rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow outline-none"
+                                placeholder="Enter your Employee ID" type="text" required />
+                        </div>
+                        <button type="submit"
+                            class="h-14 px-8 bg-primary hover:bg-blue-800 text-white font-medium rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all">
+                            Track
+                            <span class="material-icons-outlined text-xl">search</span>
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center md:text-left">
+                        <p class="text-xs text-slate-400 dark:text-slate-500">
+                            Please ensure you have the correct Ticket ID sent to your email.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div id="resultsArea" class="hidden mt-8 space-y-6"></div>
+
+                <div id="emptyState" class="hidden text-center py-12">
+                    <div
+                        class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+                        <span class="material-icons-outlined text-3xl text-slate-500">inbox</span>
+                    </div>
+                    <h3 class="text-slate-900 dark:text-white font-bold text-lg mb-2">No tickets found</h3>
+                    <p class="text-slate-500 text-sm">We couldn't find any tickets matching that ID.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer
+            class="bg-surface-light dark:bg-surface-dark border-t border-gray-200 dark:border-gray-700 py-4 px-8 flex-shrink-0">
+            <div
+                class="flex flex-col md:flex-row items-center justify-between gap-2 text-sm text-text-sub-light dark:text-text-sub-dark">
+                <div class="flex items-center gap-1">
+                    <span>© 2024</span>
+                    <span class="font-semibold text-gray-900 dark:text-white">Shubham EPC Pvt. Ltd.</span>
+                    <span>All rights reserved.</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span>Powered by</span>
+                    <span class="font-semibold text-primary dark:text-blue-400">Helpdesk Pro</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Login/Signup Modal -->
+    <div id="authModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
+            <button onclick="toggleAuthModal()"
+                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <span class="material-icons-outlined">close</span>
+            </button>
+            <div class="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
+                <button id="loginTab" onclick="switchAuthTab('login')"
+                    class="pb-3 px-4 font-semibold text-primary border-b-2 border-primary">Login</button>
+                <button id="signupTab" onclick="switchAuthTab('signup')"
+                    class="pb-3 px-4 font-semibold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">Sign
+                    Up</button>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome Back!</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Login with your Employee ID</p>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Employee ID</label>
+                    <input type="text" id="loginEmployeeId" required
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mobile
+                        Number</label>
+                    <input type="tel" id="loginMobile" required pattern="[0-9]{10}"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="10-digit mobile number">
+                </div>
+                <button type="submit" id="loginBtn"
+                    class="w-full bg-primary hover:bg-blue-800 text-white font-semibold py-3 rounded-lg transition-all">Login</button>
+            </form>
+            <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-4 hidden">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Create Account</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Register as a new employee</p>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Employee ID</label>
+                    <input type="text" id="signupEmployeeId" required
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
+                    <input type="text" id="signupName" required
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                    <input type="email" id="signupEmail" required
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mobile
+                        Number</label>
+                    <input type="tel" id="signupMobile" required pattern="[0-9]{10}"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="10-digit mobile number">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Department
+                        (Optional)</label>
+                    <input type="text" id="signupDepartment"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <button type="submit" id="signupBtn"
+                    class="w-full bg-primary hover:bg-blue-800 text-white font-semibold py-3 rounded-lg transition-all">Sign
+                    Up</button>
+            </form>
+            <button id="logoutBtn" onclick="handleLogout()"
+                class="hidden w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-all mt-4">Logout</button>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/auth.js"></script>
+    <script>
+        const user = Storage.getUser();
+        if (user) {
+            document.getElementById('userName').textContent = user.name || 'Employee';
+        }
+
+        let searchType = 'employee';
+
+        // Handle Create Ticket Button Click
+        function handleCreateTicketClick(event) {
+            event.preventDefault();
+
+            // Check if user is logged in
+            const employee = getLoggedInEmployee();
+            if (!employee) {
+                alert('Please login to create a ticket');
+                toggleAuthModal();
+                return false;
+            }
+
+            // If logged in, navigate to create ticket page
+            window.location.href = '/create-ticket.html';
+        }
+
+        // Check URL params for auto-search
+        const urlParams = new URLSearchParams(window.location.search);
+        const query = urlParams.get('query');
+        if (query) {
+            document.getElementById('searchInput').value = query;
+            if (query.length === 24) { // Assume Object ID is Ticket ID
+                switchTab('ticket');
+            }
+            // Small delay to ensure API and DOM are ready
+            setTimeout(() => document.getElementById('searchForm').dispatchEvent(new Event('submit')), 100);
+        }
+
+        function switchTab(type) {
+            searchType = type;
+            const input = document.getElementById('searchInput');
+            const tabEmp = document.getElementById('tabEmployee');
+            const tabTicket = document.getElementById('tabTicket');
+
+            const activeClass = "flex items-center justify-center h-14 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 text-primary dark:text-blue-300 font-semibold shadow-sm transition-all";
+            const inactiveClass = "flex items-center justify-center h-14 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-text-sub-light dark:text-text-sub-dark hover:bg-slate-100 dark:hover:bg-slate-700 transition-all font-medium";
+
+            if (type === 'employee') {
+                input.placeholder = "Enter your Employee ID";
+                tabEmp.className = activeClass;
+                tabTicket.className = inactiveClass;
+            } else {
+                input.placeholder = "Enter Ticket ID (e.g. TICKET-1234)";
+                tabTicket.className = activeClass;
+                tabEmp.className = inactiveClass;
+            }
+        }
+
+        async function handleSearch(e) {
+            e.preventDefault();
+            const input = document.getElementById('searchInput').value.trim();
+            const resultsArea = document.getElementById('resultsArea');
+            const emptyState = document.getElementById('emptyState');
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="material-icons-outlined animate-spin text-xl">refresh</span>';
+
+            resultsArea.innerHTML = '';
+            resultsArea.classList.add('hidden');
+            emptyState.classList.add('hidden');
+
+            try {
+                let tickets = [];
+                if (searchType === 'employee') {
+                    const res = await TicketAPI.getByEmployeeId(input);
+                    tickets = res.data;
+                } else {
+                    const res = await TicketAPI.getByTicketId(input);
+                    tickets = res.data ? [res.data] : [];
+                }
+
+                if (!tickets || tickets.length === 0) {
+                    emptyState.classList.remove('hidden');
+                } else {
+                    resultsArea.classList.remove('hidden');
+                    tickets.forEach(ticket => {
+                        resultsArea.innerHTML += createTicketCard(ticket);
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                emptyState.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
+            }
+        }
+
+        function createTicketCard(ticket) {
+            let statusColor = "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+            if (ticket.status === 'Resolved') statusColor = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+            if (ticket.status === 'Closed') statusColor = "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+
+            return `
+            <div class="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl p-6 hover:shadow-md transition-all">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                    <div>
+                        <div class="text-xs text-text-sub-light dark:text-text-sub-dark font-mono mb-1">ID: ${ticket.ticketId || ticket._id}</div>
+                        <h3 class="text-slate-900 dark:text-white font-bold text-lg">${ticket.subject || ticket.title || 'No Subject'}</h3>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${statusColor}">
+                        ${ticket.status || 'Open'}
+                    </span>
+                </div>
+                <p class="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2">${ticket.description || 'No description provided.'}</p>
+                
+                <div class="flex flex-wrap gap-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                     <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                        <span class="material-icons-outlined text-sm mr-1">calendar_today</span>
+                        ${new Date(ticket.createdAt).toLocaleDateString()}
+                    </div>
+                    <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                        <span class="material-icons-outlined text-sm mr-1">category</span>
+                        ${ticket.category || 'General'}
+                    </div>
+                    <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                        <span class="material-icons-outlined text-sm mr-1">priority_high</span>
+                        ${ticket.priority || 'Normal'}
+                    </div>
+                </div>
+                 ${ticket.adminResponse ? `
+                <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                    <p class="text-xs font-bold text-primary dark:text-blue-300 mb-1 flex items-center">
+                        <span class="material-icons-outlined text-sm mr-1">forum</span> Admin Response
+                    </p>
+                    <p class="text-sm text-slate-700 dark:text-slate-300">${ticket.adminResponse}</p>
+                </div>` : ''}
+            </div>
+            `;
+        }
+    </script>
+</body>
+
+</html>

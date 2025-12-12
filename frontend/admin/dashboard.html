@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Admin Dashboard - Helpdesk</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#254798",
+                        secondary: "#EFF3FC",
+                        "background-light": "#F3F5FA",
+                        "background-dark": "#0F172A",
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#1E293B",
+                        "text-main-light": "#111827",
+                        "text-main-dark": "#F9FAFB",
+                        "text-sub-light": "#6B7280",
+                        "text-sub-dark": "#9CA3AF",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        'xl': '0.75rem',
+                        '2xl': '1rem',
+                    },
+                },
+            },
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark h-screen overflow-hidden flex">
+    <!-- Sidebar -->
+    <aside
+        class="w-64 bg-surface-light dark:bg-surface-dark border-r border-gray-200 dark:border-gray-700 flex flex-col justify-between flex-shrink-0 z-20 relative">
+        <div class="flex-1 flex flex-col">
+            <div class="h-20 flex items-center px-6 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
+                <div class="flex items-center gap-3 w-full justify-center">
+                    <img src="/assets/images/shubham-logo.png" alt="Shubham Logo" class="h-12 w-auto object-contain">
+                </div>
+            </div>
+            <nav class="p-4 space-y-1 flex-1 overflow-y-auto">
+                <a class="flex items-center px-4 py-3 bg-secondary dark:bg-blue-900/40 text-primary dark:text-blue-300 rounded-lg font-medium transition-colors shadow-sm"
+                    href="/admin/dashboard.html">
+                    <span class="material-icons-outlined mr-3">dashboard</span>
+                    Dashboard
+                </a>
+                <a class="flex items-center px-4 py-3 text-text-sub-light dark:text-text-sub-dark hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                    href="/admin/tickets.html">
+                    <span class="material-icons-outlined mr-3">confirmation_number</span>
+                    Tickets
+                </a>
+                <a class="flex items-center px-4 py-3 text-text-sub-light dark:text-text-sub-dark hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                    href="/admin/employees.html">
+                    <span class="material-icons-outlined mr-3">people</span>
+                    Employees
+                </a>
+                <a class="flex items-center px-4 py-3 text-text-sub-light dark:text-text-sub-dark hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                    href="/admin/projects.html">
+                    <span class="material-icons-outlined mr-3">folder</span>
+                    Projects
+                </a>
+                <a class="flex items-center px-4 py-3 text-text-sub-light dark:text-text-sub-dark hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                    href="/admin/announcements.html">
+                    <span class="material-icons-outlined mr-3">campaign</span>
+                    Announcements
+                </a>
+                <a class="flex items-center px-4 py-3 text-text-sub-light dark:text-text-sub-dark hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                    href="/admin/settings.html">
+                    <span class="material-icons-outlined mr-3">settings</span>
+                    Settings
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+            <button onclick="logout()"
+                class="w-full flex items-center justify-center px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+                <span class="material-icons-outlined mr-2 text-sm">logout</span>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Header -->
+        <header
+            class="h-20 bg-surface-light dark:bg-surface-dark border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-8 flex-shrink-0 z-10">
+            <div>
+                <h1 class="text-lg font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+                <p class="text-xs text-text-sub-light dark:text-text-sub-dark hidden sm:block">Welcome back to your
+                    admin panel</p>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block"
+                        id="userName">Admin</span>
+                    <div
+                        class="h-9 w-9 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium shadow-sm">
+                        <span class="material-icons-outlined text-lg">admin_panel_settings</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-6 md:p-10">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <!-- Total Tickets -->
+                <div
+                    class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                            <span
+                                class="material-icons-outlined text-2xl text-blue-600 dark:text-blue-400">confirmation_number</span>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1" id="totalTickets">0</div>
+                    <div class="text-sm text-text-sub-light dark:text-text-sub-dark">Total Tickets</div>
+                </div>
+
+                <!-- Open Tickets -->
+                <div
+                    class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
+                            <span
+                                class="material-icons-outlined text-2xl text-orange-600 dark:text-orange-400">pending</span>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1" id="openTickets">0</div>
+                    <div class="text-sm text-text-sub-light dark:text-text-sub-dark">Open Tickets</div>
+                </div>
+
+                <!-- Resolved Tickets -->
+                <div
+                    class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                            <span
+                                class="material-icons-outlined text-2xl text-green-600 dark:text-green-400">check_circle</span>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1" id="resolvedTickets">0</div>
+                    <div class="text-sm text-text-sub-light dark:text-text-sub-dark">Resolved Tickets</div>
+                </div>
+
+                <!-- Total Employees -->
+                <div
+                    class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
+                            <span
+                                class="material-icons-outlined text-2xl text-purple-600 dark:text-purple-400">people</span>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1" id="totalEmployees">0</div>
+                    <div class="text-sm text-text-sub-light dark:text-text-sub-dark">Total Employees</div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                <!-- Status Chart -->
+                <div
+                    class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm p-8 border border-gray-100 dark:border-gray-700">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                        <span class="material-icons-outlined mr-2 text-primary">bar_chart</span>
+                        Tickets by Status
+                    </h3>
+                    <div id="statusChart"></div>
+                </div>
+
+                <!-- Trend Chart -->
+                <div
+                    class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm p-8 border border-gray-100 dark:border-gray-700">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                        <span class="material-icons-outlined mr-2 text-primary">trending_up</span>
+                        Daily Ticket Trend
+                    </h3>
+                    <div id="trendChart"></div>
+                </div>
+            </div>
+
+            <!-- Recent Tickets -->
+            <div
+                class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm p-8 border border-gray-100 dark:border-gray-700">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                        <span class="material-icons-outlined mr-2 text-primary">history</span>
+                        Recent Tickets
+                    </h3>
+                    <a href="/admin/tickets.html"
+                        class="text-sm font-semibold text-primary hover:text-blue-800 transition-colors">View All →</a>
+                </div>
+                <div id="recentTicketsList">
+                    <div class="text-center py-8">
+                        <div
+                            class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer
+            class="bg-surface-light dark:bg-surface-dark border-t border-gray-200 dark:border-gray-700 py-4 px-8 flex-shrink-0">
+            <div
+                class="flex flex-col md:flex-row items-center justify-between gap-2 text-sm text-text-sub-light dark:text-text-sub-dark">
+                <div class="flex items-center gap-1">
+                    <span>© 2024</span>
+                    <span class="font-semibold text-gray-900 dark:text-white">Shubham EPC Pvt. Ltd.</span>
+                    <span>All rights reserved.</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span>Powered by</span>
+                    <span class="font-semibold text-primary dark:text-blue-400">Helpdesk Pro</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!checkAuth()) {
+            Router.navigate('/admin/login.html');
+        }
+
+        const user = Storage.getUser();
+        if (!user || user.role !== 'admin') {
+            alert('Unauthorized access');
+            setTimeout(() => logout(), 2000);
+        }
+
+        // Set user info
+        document.getElementById('userName').textContent = user.name;
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Load statistics
+                const statsResponse = await TicketAPI.getStatistics();
+                const stats = statsResponse.data;
+
+                // Load employees count
+                const employeesResponse = await EmployeeAPI.getAll();
+                const totalEmployees = employeesResponse.data.length;
+
+                // Update stat cards
+                document.getElementById('totalTickets').textContent = stats.overall.total;
+                document.getElementById('openTickets').textContent = stats.overall.open + stats.overall.underReview + stats.overall.assigned + stats.overall.inProgress + stats.overall.pending;
+                document.getElementById('resolvedTickets').textContent = stats.overall.resolved + stats.overall.closed;
+                document.getElementById('totalEmployees').textContent = totalEmployees;
+
+                // Render charts
+                renderStatusChart(stats.overall);
+                renderTrendChart(stats.daily);
+
+                // Load recent tickets
+                const ticketsResponse = await TicketAPI.getAll({ limit: 5, page: 1 });
+                renderRecentTickets(ticketsResponse.data);
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                alert('Error loading dashboard data');
+            }
+        }
+
+        // Render status chart
+        function renderStatusChart(stats) {
+            const statusData = [
+                { label: 'Open', value: stats.open, color: '#3B82F6' },
+                { label: 'In Progress', value: stats.inProgress, color: '#F59E0B' },
+                { label: 'Resolved', value: stats.resolved, color: '#10B981' },
+                { label: 'Closed', value: stats.closed, color: '#6B7280' }
+            ];
+
+            const total = statusData.reduce((sum, item) => sum + item.value, 0);
+
+            document.getElementById('statusChart').innerHTML = `
+                <div class="space-y-4">
+                    ${statusData.map(item => {
+                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+                return `
+                            <div>
+                                <div class="flex justify-between mb-2 text-sm">
+                                    <span class="text-gray-700 dark:text-gray-300">${item.label}</span>
+                                    <span class="font-semibold text-gray-900 dark:text-white">${item.value} (${percentage}%)</span>
+                                </div>
+                                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-500" style="width: ${percentage}%; background: ${item.color};"></div>
+                                </div>
+                            </div>
+                        `;
+            }).join('')}
+                </div>
+            `;
+        }
+
+        // Render trend chart
+        function renderTrendChart(dailyStats) {
+            const max = Math.max(...dailyStats.map(d => d.count), 1);
+
+            document.getElementById('trendChart').innerHTML = `
+                <div class="flex items-end justify-around h-48 gap-2">
+                    ${dailyStats.map(day => {
+                const height = (day.count / max) * 100;
+                return `
+                            <div class="flex-1 flex flex-direction-column items-center gap-2">
+                                <div class="w-full bg-gradient-to-t from-primary to-blue-400 rounded-t-lg transition-all duration-500" style="height: ${height}%; min-height: 4px;"></div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">${day.date}</div>
+                                <div class="text-sm font-semibold text-gray-900 dark:text-white">${day.count}</div>
+                            </div>
+                        `;
+            }).join('')}
+                </div>
+            `;
+        }
+
+        // Render recent tickets
+        function renderRecentTickets(tickets) {
+            const container = document.getElementById('recentTicketsList');
+
+            if (!tickets || tickets.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">No tickets yet</p>';
+                return;
+            }
+
+            container.innerHTML = tickets.map(ticket => `
+                <div class="border-l-4 border-primary bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-3 hover:shadow-md transition-shadow cursor-pointer"
+                    onclick="Router.navigate('/admin/tickets.html')">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-bold text-primary">${ticket.ticketId}</span>
+                        <div class="flex gap-2">
+                            <span class="px-2 py-1 text-xs rounded-full ${getStatusClass(ticket.status)}">${ticket.status}</span>
+                            <span class="px-2 py-1 text-xs rounded-full ${getPriorityClass(ticket.priority)}">${ticket.priority}</span>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-700 dark:text-gray-300 mb-2">${ticket.description.substring(0, 100)}...</div>
+                    <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
+                        <span>👤 ${ticket.employeeName}</span>
+                        <span>📁 ${ticket.project?.name || 'N/A'}</span>
+                        <span>📅 ${new Date(ticket.createdAt).toLocaleDateString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'Open': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                'In Progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+                'Resolved': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+                'Closed': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+            };
+            return classes[status] || classes['Open'];
+        }
+
+        function getPriorityClass(priority) {
+            const classes = {
+                'Low': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+                'Medium': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                'High': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+                'Critical': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+            };
+            return classes[priority] || classes['Medium'];
+        }
+
+        // Logout function
+        function logout() {
+            Storage.clearAll();
+            Router.navigate('/admin/login.html');
+        }
+
+        // Initialize
+        loadDashboard();
+    </script>
+</body>
+
+</html>

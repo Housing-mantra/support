@@ -1,0 +1,369 @@
+const Ticket = require('../models/Ticket');
+const Employee = require('../models/Employee');
+
+const Project = require('../models/Project');
+const { generateTicketId, calculateTicketStats } = require('../utils/helpers');
+const { sendTicketUpdateEmail } = require('../utils/emailService');
+
+// @desc    Create ticket (from employee portal)
+// @route   POST /api/tickets
+// @access  Public
+exports.createTicket = async (req, res) => {
+    try {
+        const {
+            employeeId,
+            name,
+            email,
+            mobile,
+            projectId,
+            issueType,
+            priority,
+            description
+        } = req.body;
+
+        // Get or create employee
+        let employee = await Employee.findOne({ employeeId });
+
+        if (!employee) {
+            // Create new employee if doesn't exist
+            employee = await Employee.create({
+                employeeId,
+                name,
+                email,
+                mobile
+            });
+        }
+
+        // Check if project exists (only if projectId is provided and valid)
+        let project = null;
+        if (projectId && projectId !== '000000000000000000000000') {
+            project = await Project.findById(projectId);
+            if (!project) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Project not found'
+                });
+            }
+        }
+
+        // Generate unique ticket ID
+        const ticketId = generateTicketId();
+
+        // Handle file attachments if any
+        const attachments = [];
+        if (req.files && req.files.length > 0) {
+            req.files.forEach(file => {
+                attachments.push({
+                    filename: file.filename,
+                    originalName: file.originalname,
+                    path: file.path
+                });
+            });
+        }
+
+        // Create ticket
+        const ticketData = {
+            ticketId,
+            employee: employee._id,
+            employeeId,
+            employeeName: name,
+            employeeEmail: email,
+            employeeMobile: mobile,
+            issueType: issueType || 'General',
+            priority: priority || 'Medium',
+            description,
+            attachments,
+            timeline: [{
+                status: 'Open',
+                comment: 'Ticket created',
+                updatedByName: name,
+                timestamp: Date.now()
+            }]
+        };
+
+        // Only add project if it exists
+        if (project) {
+            ticketData.project = projectId;
+        }
+
+        const ticket = await Ticket.create(ticketData);
+
+        // Populate project details if exists
+        if (project) {
+            await ticket.populate('project');
+        }
+
+        res.status(201).json({
+            success: true,
+            message: 'Ticket created successfully',
+            data: ticket
+        });
+    } catch (error) {
+        console.error('Create ticket error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while creating ticket',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Get tickets by employee ID
+// @route   GET /api/tickets/employee/:employeeId
+// @access  Public
+exports.getTicketsByEmployeeId = async (req, res) => {
+    try {
+        const { employeeId } = req.params;
+        const tickets = await Ticket.find({
+            employeeId
+        })
+            .populate('project')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            count: tickets.length,
+            data: tickets
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Get single ticket by ticket ID
+// @route   GET /api/tickets/by-ticket-id/:ticketId
+// @access  Public
+exports.getTicketByTicketId = async (req, res) => {
+    try {
+        const { ticketId } = req.params;
+
+        const ticket = await Ticket.findOne({ ticketId })
+            .populate('project')
+            .populate('assignedTo', 'name email')
+            .populate('employee');
+
+        if (!ticket) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ticket not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: ticket
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Get all tickets for company (Admin)
+// @route   GET /api/tickets
+// @access  Private (Company Admin)
+exports.getTickets = async (req, res) => {
+    try {
+        const { status, priority, project, search, startDate, endDate, page = 1, limit = 50 } = req.query;
+
+        // Build query
+        const query = {};
+
+        if (status) query.status = status;
+        if (priority) query.priority = priority;
+        if (project) query.project = project;
+
+        if (search) {
+            query.$or = [
+                { ticketId: { $regex: search, $options: 'i' } },
+                { employeeName: { $regex: search, $options: 'i' } },
+                { employeeId: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) query.createdAt.$lte = new Date(endDate);
+        }
+
+        // Pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const tickets = await Ticket.find(query)
+            .populate('project')
+            .populate('employee')
+            .populate('assignedTo', 'name email')
+            .sort({ createdAt: -1 })
+            .limit(parseInt(limit))
+            .skip(skip);
+
+        const total = await Ticket.countDocuments(query);
+
+        res.status(200).json({
+            success: true,
+            count: tickets.length,
+            total,
+            page: parseInt(page),
+            pages: Math.ceil(total / parseInt(limit)),
+            data: tickets
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Update ticket status and add comment
+// @route   PUT /api/tickets/:id
+// @access  Private (Company Admin)
+exports.updateTicket = async (req, res) => {
+    try {
+        const { status, comment, priority, assignedTo } = req.body;
+
+        const ticket = await Ticket.findById(req.params.id).populate('employee');
+
+        if (!ticket) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ticket not found'
+            });
+        }
+
+        // Update fields
+        if (status) ticket.status = status;
+        if (priority) ticket.priority = priority;
+        if (assignedTo) ticket.assignedTo = assignedTo;
+
+        // Add to timeline
+        if (status || comment) {
+            const timelineEntry = {
+                status: status || ticket.status,
+                comment: comment || '',
+                updatedBy: req.user._id,
+                updatedByName: req.user.name,
+                timestamp: Date.now()
+            };
+
+            // Handle file attachments in update
+            if (req.files && req.files.length > 0) {
+                timelineEntry.attachments = req.files.map(file => ({
+                    filename: file.filename,
+                    path: file.path
+                }));
+            }
+
+            ticket.timeline.push(timelineEntry);
+        }
+
+        await ticket.save();
+
+        // Send email notification to employee
+        if (status) {
+            await sendTicketUpdateEmail(
+                ticket.employeeEmail,
+                ticket.employeeName,
+                ticket.ticketId,
+                status,
+                comment
+            );
+        }
+
+        await ticket.populate('project assignedTo');
+
+        res.status(200).json({
+            success: true,
+            message: 'Ticket updated successfully',
+            data: ticket
+        });
+    } catch (error) {
+        console.error('Update ticket error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Get ticket statistics for company
+// @route   GET /api/tickets/stats/:companyId
+// @access  Private (Company Admin)
+exports.getTicketStatistics = async (req, res) => {
+    try {
+        // Get all tickets
+        const tickets = await Ticket.find();
+
+        // Calculate overall stats
+        const stats = calculateTicketStats(tickets);
+
+        // Get project-wise breakdown
+        const projectStats = await Ticket.aggregate([
+            {
+                $group: {
+                    _id: '$project',
+                    count: { $sum: 1 },
+                    open: {
+                        $sum: {
+                            $cond: [{ $in: ['$status', ['Open', 'Under Review', 'Assigned', 'In Progress', 'Pending']] }, 1, 0]
+                        }
+                    },
+                    closed: {
+                        $sum: {
+                            $cond: [{ $in: ['$status', ['Resolved', 'Closed']] }, 1, 0]
+                        }
+                    }
+                }
+            }
+        ]);
+
+        // Populate project names
+        await Project.populate(projectStats, { path: '_id', select: 'name' });
+
+        // Get daily stats for last 7 days
+        const dailyStats = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            date.setHours(0, 0, 0, 0);
+
+            const nextDate = new Date(date);
+            nextDate.setDate(nextDate.getDate() + 1);
+
+            const count = await Ticket.countDocuments({
+                createdAt: { $gte: date, $lt: nextDate }
+            });
+
+            dailyStats.push({
+                date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                count
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                overall: stats,
+                byProject: projectStats,
+                daily: dailyStats
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+};
