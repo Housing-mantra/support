@@ -2,7 +2,7 @@
 // HELPDESK SYSTEM - SHARED API UTILITIES
 // ============================================
 
-const API_BASE_URL = window.location.origin + '/api';
+const API_BASE_URL = '/api';
 
 // ========== API Request Helper ==========
 async function apiRequest(endpoint, options = {}) {
