@@ -14,8 +14,7 @@ const connectDB = async () => {
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false, // Return error immediately if DB not ready (better for debug)
-      serverSelectionTimeoutMS: 5000,
+      bufferCommands: true, // Allow Mongoose to buffer commands until connected
     };
 
     console.log('Connecting to MongoDB...');

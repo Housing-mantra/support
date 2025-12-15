@@ -7,6 +7,16 @@ const connectDB = require('./config/database');
 // Initialize app
 const app = express();
 
+// Middleware to ensure DB is connected (especially for Serverless)
+app.use(async (req, res, next) => {
+    if (require.main !== module) {
+        // We are in Vercel/Serverless environment
+        // Explicitly await the connection
+        await connectDB();
+    }
+    next();
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
