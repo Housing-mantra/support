@@ -16,20 +16,12 @@
             "dest": "/backend/server.js"
         },
         {
-            "src": "/uploads/(.*)",
-            "dest": "/backend/server.js"
-        },
-        {
             "src": "/admin/(.*)",
             "dest": "/frontend/admin/$1"
         },
         {
             "src": "/admin",
             "dest": "/frontend/admin/index.html"
-        },
-        {
-            "src": "/",
-            "dest": "/frontend/index.html"
         },
         {
             "src": "/(.*)",
