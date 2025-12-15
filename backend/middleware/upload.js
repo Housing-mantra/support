@@ -3,9 +3,16 @@ const path = require('path');
 const fs = require('fs');
 
 // Ensure upload directory exists
-const uploadDir = './uploads';
+// Ensure upload directory exists
+const uploadDir = process.env.NODE_ENV === 'production' ? '/tmp' : path.join(__dirname, '../../uploads');
+
+// Create directory if not exists (only for local dev mainly, /tmp exists usually)
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+    try {
+        fs.mkdirSync(uploadDir, { recursive: true });
+    } catch (err) {
+        console.error('Failed to create upload dir:', err);
+    }
 }
 
 // Configure storage
