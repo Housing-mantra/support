@@ -23,6 +23,6 @@ router.post('/bulk-import', protect, authorize('admin'), bulkImportEmployees);
 router.get('/', protect, authorize('admin'), getEmployees);
 router.get('/:id', protect, authorize('admin'), getEmployee);
 router.put('/:id', protect, authorize('admin'), updateEmployee);
-router.delete('/:id', protect, authorize('admin'), deleteEmployee);
+router.put('/profile/:_id', updateEmployee); // Allow updates (temporarily public for MVP)
 
 module.exports = router;

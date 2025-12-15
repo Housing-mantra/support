@@ -198,6 +198,8 @@ exports.deleteEmployee = async (req, res) => {
 // @access  Private (Company Admin)
 exports.bulkImportEmployees = async (req, res) => {
     try {
+        const { employees } = req.body;
+
         if (!Array.isArray(employees) || employees.length === 0) {
             return res.status(400).json({
                 success: false,

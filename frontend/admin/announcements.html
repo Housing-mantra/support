@@ -209,7 +209,7 @@
 
     <script src="/shared/js/api.js"></script>
     <script>
-        if (!checkAuth()) Router.navigate('/admin/login.html');
+        if (!checkAuth()) Router.navigate('/admin/');
 
         const user = Storage.getUser();
         if (!user || user.role !== 'admin') {
@@ -379,9 +379,10 @@
             return classes[priority] || classes['Normal'];
         }
 
+        // Logout function
         function logout() {
-            Storage.clearAll();
-            Router.navigate('/admin/login.html');
+            Storage.clear();
+            Router.navigate('/admin/');
         }
 
         loadAnnouncements();

@@ -17,6 +17,7 @@ exports.createTicket = async (req, res) => {
             mobile,
             projectId,
             issueType,
+            subject, // Added subject
             priority,
             description
         } = req.body;
@@ -70,6 +71,7 @@ exports.createTicket = async (req, res) => {
             employeeEmail: email,
             employeeMobile: mobile,
             issueType: issueType || 'General',
+            subject: subject || issueType || 'Support Request', // Fallback
             priority: priority || 'Medium',
             description,
             attachments,
@@ -98,6 +100,23 @@ exports.createTicket = async (req, res) => {
             message: 'Ticket created successfully',
             data: ticket
         });
+
+        // Send email alert to respective Department Admin
+        try {
+            const { sendNewTicketAlert } = require('../utils/emailService');
+            let adminEmail = 'admin@example.com'; // Default fallback
+
+            if (ticketData.issueType === 'IT Support') {
+                adminEmail = 'it-support@shubham.biz';
+            } else if (ticketData.issueType === 'ERP Support') {
+                adminEmail = 'erp-support@shubham.biz';
+            }
+
+            // Send alert in background (don't await to avoid blocking response)
+            sendNewTicketAlert(adminEmail, ticket).catch(err => console.error('Failed to send admin alert:', err));
+        } catch (emailErr) {
+            console.error('Email alert logic failed:', emailErr);
+        }
     } catch (error) {
         console.error('Create ticket error:', error);
         res.status(500).json({
@@ -179,6 +198,14 @@ exports.getTickets = async (req, res) => {
         if (status) query.status = status;
         if (priority) query.priority = priority;
         if (project) query.project = project;
+
+        // Filter by Department based on logged-in Admin
+        if (req.user.department === 'IT Support') {
+            query.issueType = 'IT Support';
+        } else if (req.user.department === 'ERP Support') {
+            query.issueType = 'ERP Support';
+        }
+        // If department is something else (e.g. 'Admin' or null), they see all.
 
         if (search) {
             query.$or = [
@@ -302,31 +329,45 @@ exports.updateTicket = async (req, res) => {
 // @access  Private (Company Admin)
 exports.getTicketStatistics = async (req, res) => {
     try {
-        // Get all tickets
-        const tickets = await Ticket.find();
+        // Filter by Department based on logged-in Admin
+        const query = {};
+        if (req.user.department === 'IT Support') {
+            query.issueType = 'IT Support';
+        } else if (req.user.department === 'ERP Support') {
+            query.issueType = 'ERP Support';
+        }
+
+        // Get all tickets (filtered)
+        const tickets = await Ticket.find(query);
 
         // Calculate overall stats
         const stats = calculateTicketStats(tickets);
 
-        // Get project-wise breakdown
-        const projectStats = await Ticket.aggregate([
-            {
-                $group: {
-                    _id: '$project',
-                    count: { $sum: 1 },
-                    open: {
-                        $sum: {
-                            $cond: [{ $in: ['$status', ['Open', 'Under Review', 'Assigned', 'In Progress', 'Pending']] }, 1, 0]
-                        }
-                    },
-                    closed: {
-                        $sum: {
-                            $cond: [{ $in: ['$status', ['Resolved', 'Closed']] }, 1, 0]
-                        }
+        // Get project-wise breakdown (need to match first)
+        const aggregatePipeline = [];
+        // Match stage
+        if (Object.keys(query).length > 0) {
+            aggregatePipeline.push({ $match: query });
+        }
+
+        aggregatePipeline.push({
+            $group: {
+                _id: '$project',
+                count: { $sum: 1 },
+                open: {
+                    $sum: {
+                        $cond: [{ $in: ['$status', ['Open', 'Under Review', 'Assigned', 'In Progress', 'Pending']] }, 1, 0]
+                    }
+                },
+                closed: {
+                    $sum: {
+                        $cond: [{ $in: ['$status', ['Resolved', 'Closed']] }, 1, 0]
                     }
                 }
             }
-        ]);
+        });
+
+        const projectStats = await Ticket.aggregate(aggregatePipeline);
 
         // Populate project names
         await Project.populate(projectStats, { path: '_id', select: 'name' });

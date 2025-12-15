@@ -169,3 +169,69 @@ exports.sendTicketUpdateEmail = async (email, name, ticketId, status, comment) =
     return { success: false, error: error.message };
   }
 };
+
+// Send new ticket alert to admin
+exports.sendNewTicketAlert = async (adminEmail, ticket) => {
+  try {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      from: `Helpdesk System <${process.env.SMTP_USER}>`,
+      to: adminEmail,
+      subject: `New Ticket Alert: ${ticket.ticketId} - ${ticket.issueType}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #FF6B6B 0%, #EE5253 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+            .field { margin-bottom: 10px; }
+            .label { font-weight: bold; color: #555; }
+            .priority { display: inline-block; padding: 4px 10px; border-radius: 4px; font-weight: bold; background: #ffeaa7; color: #d35400; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🚨 New Ticket Received</h1>
+            </div>
+            <div class="content">
+              <h2>Action Required</h2>
+              <p>A new ticket has been submitted to your department.</p>
+              
+              <div class="field"><span class="label">Ticket ID:</span> ${ticket.ticketId}</div>
+              <div class="field"><span class="label">Employee:</span> ${ticket.employeeName} (${ticket.employeeId})</div>
+              <div class="field"><span class="label">Department:</span> ${ticket.issueType}</div>
+              <div class="field"><span class="label">Priority:</span> <span class="priority">${ticket.priority}</span></div>
+              
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+              
+              <div class="field">
+                <span class="label">Description:</span>
+                <p style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #eee;">${ticket.description}</p>
+              </div>
+
+              <center>
+                <a href="${process.env.COMPANY_ADMIN_URL}/admin" style="display: inline-block; background: #EE5253; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px;">View Ticket</a>
+              </center>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} Helpdesk System. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    return { success: true };
+  } catch (error) {
+    console.error('Email send error:', error);
+    return { success: false, error: error.message };
+  }
+};

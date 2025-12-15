@@ -359,44 +359,94 @@
         }
 
         function createTicketCard(ticket) {
-            let statusColor = "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-            if (ticket.status === 'Resolved') statusColor = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-            if (ticket.status === 'Closed') statusColor = "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+            let statusColor = "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 border border-blue-200 dark:border-blue-700";
+            if (ticket.status === 'Resolved') statusColor = "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 border border-green-200 dark:border-green-700";
+            if (ticket.status === 'Closed') statusColor = "bg-gray-100 text-gray-800 dark:bg-gray-700/40 dark:text-gray-300 border border-gray-200 dark:border-gray-600";
+            if (ticket.status === 'In Progress') statusColor = "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200 border border-purple-200 dark:border-purple-700";
+
+            const steps = ['Open', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
+            const currentStepIndex = steps.indexOf(ticket.status) > -1 ? steps.indexOf(ticket.status) : 0;
+
+            // Calculate progress percentage for simple bar (optional, or use steps)
+            const progress = ((currentStepIndex + 1) / steps.length) * 100;
+
+            let statusMessage = "Your ticket is currently being reviewed.";
+            if (ticket.status === 'Resolved' || ticket.status === 'Closed') {
+                statusMessage = "Good news! This issue has been resolved. If you're still facing problems, please reopen or create a new ticket.";
+            } else if (ticket.status === 'In Progress') {
+                statusMessage = "Our team is actively working on resolving your issue.";
+            }
 
             return `
-            <div class="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl p-6 hover:shadow-md transition-all">
+            <div class="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl p-6 hover:shadow-lg transition-all mb-4 relative overflow-hidden group">
+                <!-- Status Banner for Resolved -->
+                ${(ticket.status === 'Resolved' || ticket.status === 'Closed') ? `
+                <div class="absolute top-0 right-0 left-0 h-1.5 bg-green-500"></div>
+                ` : ''}
+
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
                     <div>
-                        <div class="text-xs text-text-sub-light dark:text-text-sub-dark font-mono mb-1">ID: ${ticket.ticketId || ticket._id}</div>
-                        <h3 class="text-slate-900 dark:text-white font-bold text-lg">${ticket.subject || ticket.title || 'No Subject'}</h3>
+                        <div class="flex items-center gap-2 mb-1">
+                             <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700">#${ticket.ticketId || ticket._id}</span>
+                             <span class="text-xs text-slate-400">• ${new Date(ticket.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <h3 class="text-slate-900 dark:text-white font-bold text-lg leading-tight group-hover:text-primary transition-colors">${ticket.subject || ticket.title || ticket.issueType || 'Support Request'}</h3>
                     </div>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${statusColor}">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${statusColor}">
                         ${ticket.status || 'Open'}
                     </span>
                 </div>
-                <p class="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2">${ticket.description || 'No description provided.'}</p>
+
+                <!-- Status Stepper -->
+                <div class="mb-6 mt-4">
+                    <div class="relative">
+                        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-slate-100 dark:bg-slate-800">
+                             <div style="width: ${((steps.indexOf(ticket.status) + 1) / 5) * 100}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary transition-all duration-500"></div>
+                        </div>
+                         <div class="flex justify-between text-[10px] font-medium text-slate-400 uppercase tracking-wide">
+                            <span class="${currentStepIndex >= 0 ? 'text-primary' : ''}">Open</span>
+                            <span class="${currentStepIndex >= 1 ? 'text-primary' : ''}">Assigned</span>
+                            <span class="${currentStepIndex >= 2 ? 'text-primary' : ''}">Working</span>
+                            <span class="${currentStepIndex >= 3 ? 'text-green-600' : ''}">Resolved</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 italic">
+                        <span class="font-semibold text-slate-700 dark:text-slate-300">Status Update:</span> ${statusMessage}
+                    </p>
+                </div>
+
+                <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 mb-4 border border-slate-100 dark:border-slate-800">
+                     <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Description</h4>
+                     <p class="text-slate-600 dark:text-slate-300 text-sm whitespace-pre-wrap">${ticket.description || 'No description provided.'}</p>
+                </div>
                 
-                <div class="flex flex-wrap gap-4 pt-4 border-t border-slate-100 dark:border-slate-700">
-                     <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
-                        <span class="material-icons-outlined text-sm mr-1">calendar_today</span>
-                        ${new Date(ticket.createdAt).toLocaleDateString()}
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex items-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm">
+                        <span class="material-icons-outlined text-sm mr-1.5 text-primary">category</span>
+                        ${ticket.issueType || ticket.category || 'General'}
                     </div>
-                    <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
-                        <span class="material-icons-outlined text-sm mr-1">category</span>
-                        ${ticket.category || 'General'}
-                    </div>
-                    <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
-                        <span class="material-icons-outlined text-sm mr-1">priority_high</span>
+                    <div class="flex items-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm">
+                        <span class="material-icons-outlined text-sm mr-1.5 text-orange-500">priority_high</span>
                         ${ticket.priority || 'Normal'}
                     </div>
                 </div>
+
                  ${ticket.adminResponse ? `
-                <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 relative">
+                     <div class="absolute -top-2 left-6 w-4 h-4 bg-blue-50 dark:bg-blue-900/20 border-t border-l border-blue-100 dark:border-blue-800 transform rotate-45"></div>
                     <p class="text-xs font-bold text-primary dark:text-blue-300 mb-1 flex items-center">
-                        <span class="material-icons-outlined text-sm mr-1">forum</span> Admin Response
+                        <span class="material-icons-outlined text-sm mr-2">admin_panel_settings</span> Response from Support Team
                     </p>
-                    <p class="text-sm text-slate-700 dark:text-slate-300">${ticket.adminResponse}</p>
+                    <p class="text-sm text-slate-700 dark:text-slate-300 pl-6 border-l-2 border-primary/20">${ticket.adminResponse}</p>
                 </div>` : ''}
+
+                 <!-- Visual "Problem Solved" Indicator -->
+                 ${(ticket.status === 'Resolved' || ticket.status === 'Closed') ? `
+                 <div class="mt-4 flex items-center justify-center p-2 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-800/30">
+                     <span class="material-icons-outlined text-green-600 mr-2">check_circle</span>
+                     <span class="text-sm font-bold text-green-700 dark:text-green-400">Problem Solved</span>
+                 </div>
+                 ` : ''}
             </div>
             `;
         }

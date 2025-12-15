@@ -55,7 +55,8 @@ exports.employeeLogin = async (req, res) => {
         console.error('Employee login error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error during login'
+            message: 'Server error during login: ' + error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };

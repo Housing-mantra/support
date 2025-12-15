@@ -148,11 +148,10 @@
     <script src="/shared/js/api.js"></script>
     <script>
         // Redirect if already logged in
-        if (checkAuth()) {
-            const user = Storage.getUser();
-            if (user && user.role === 'admin') {
-                Router.navigate('/admin/dashboard.html');
-            }
+        const token = Storage.getToken();
+        const user = Storage.getUser();
+        if (token && user && user.role === 'admin') {
+            Router.navigate('/admin/dashboard.html');
         }
 
         // Toggle password visibility
@@ -175,13 +174,13 @@
             const alertText = document.getElementById('alertText');
 
             alertDiv.className = `mb-6 p-4 rounded-lg ${type === 'error'
-                    ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-                    : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
                 }`;
 
             alertText.className = `text-sm font-medium ${type === 'error'
-                    ? 'text-red-800 dark:text-red-300'
-                    : 'text-green-800 dark:text-green-300'
+                ? 'text-red-800 dark:text-red-300'
+                : 'text-green-800 dark:text-green-300'
                 }`;
 
             alertText.textContent = message;
@@ -208,7 +207,7 @@
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
 
-                const response = await AdminAPI.login({ email, password });
+                const response = await AuthAPI.login({ email, password });
 
                 if (response.success) {
                     // Save user data

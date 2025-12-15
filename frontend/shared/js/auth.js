@@ -14,14 +14,17 @@ function toggleAuthModal() {
         document.getElementById('logoutBtn').classList.remove('hidden');
 
         // Hide tabs when logged in
-        const tabsDiv = document.querySelector('#authModal .flex.gap-4.mb-6');
+        const tabsDiv = document.getElementById('authTabs');
         if (tabsDiv) {
             tabsDiv.classList.add('hidden');
         }
 
         // Show profile info
-        document.querySelector('#authModal h2').textContent = `Hello, ${employee.name}!`;
-        document.querySelector('#authModal p').textContent = `Employee ID: ${employee.employeeId}`;
+        const authTitle = document.querySelector('#authModal h2');
+        if (authTitle) authTitle.textContent = `Hello, ${employee.name}!`;
+
+        const authSubtitle = document.querySelector('#authModal p');
+        if (authSubtitle) authSubtitle.textContent = `Employee ID: ${employee.employeeId}`;
 
         // Show profile details
         showProfileDetails(employee);
@@ -32,7 +35,7 @@ function toggleAuthModal() {
         document.getElementById('logoutBtn').classList.add('hidden');
 
         // Show tabs when logged out
-        const tabsDiv = document.querySelector('#authModal .flex.gap-4.mb-6');
+        const tabsDiv = document.getElementById('authTabs');
         if (tabsDiv) {
             tabsDiv.classList.remove('hidden');
         }
@@ -93,8 +96,89 @@ function showProfileDetails(employee) {
 }
 
 function toggleEditProfile() {
-    alert('Profile edit feature coming soon!');
-    // TODO: Implement profile edit functionality
+    const employee = getLoggedInEmployee();
+    if (!employee) return;
+
+    const profileDiv = document.getElementById('profileDetails');
+    if (!profileDiv) return;
+
+    profileDiv.innerHTML = `
+    <form id="editProfileForm" onsubmit="handleUpdateProfile(event)" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+        <input type="text" id="editName" value="${employee.name}" required
+          class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mobile</label>
+        <input type="tel" id="editMobile" value="${employee.mobile}" required pattern="[0-9]{10}"
+          class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+        <input type="email" id="editEmail" value="${employee.email}" required
+          class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
+        <input type="text" id="editDepartment" value="${employee.department || ''}"
+          class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button type="submit" class="flex-1 bg-primary text-white py-2 rounded font-medium">Save</button>
+        <button type="button" onclick="showProfileDetails(getLoggedInEmployee())" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded font-medium">Cancel</button>
+      </div>
+    </form>
+    `;
+}
+
+async function handleUpdateProfile(event) {
+    event.preventDefault();
+    const employee = getLoggedInEmployee();
+
+    // Prepare data
+    const updatedData = {
+        name: document.getElementById('editName').value,
+        mobile: document.getElementById('editMobile').value,
+        email: document.getElementById('editEmail').value,
+        department: document.getElementById('editDepartment').value
+    };
+
+    try {
+        // We use a direct fetch here because `EmployeeAuthAPI` might not have update method yet
+        // The endpoint is /api/employees/profile/:id (we exposed this in backend)
+        const empId = employee.id || employee._id;
+        const response = await fetch(`${API_BASE_URL}/employees/profile/${empId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Profile updated successfully!');
+            // Update local storage
+            // Result data from updateEmployee is the full mongoose doc, which has _id
+            // We want to keep the session structure consistent if possible, or just use the new data
+            // Let's normalize to ensure 'id' is present if we rely on it
+            const newEmployeeData = result.data;
+            const sessionEmployee = {
+                ...newEmployeeData,
+                id: newEmployeeData._id || newEmployeeData.id // Ensure id is available
+            };
+
+            saveEmployeeSession(sessionEmployee);
+            // Refresh view
+            showProfileDetails(sessionEmployee);
+        } else {
+            throw new Error(result.message || 'Update failed');
+        }
+    } catch (error) {
+        alert('Error updating profile: ' + error.message);
+    }
 }
 
 function switchAuthTab(tab) {

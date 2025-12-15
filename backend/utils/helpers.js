@@ -18,11 +18,9 @@ exports.generateVerificationToken = () => {
     return crypto.randomBytes(32).toString('hex');
 };
 
-// Generate unique ticket ID
+// Generate unique ticket ID (6 digits)
 exports.generateTicketId = () => {
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `TICKET-${timestamp}-${random}`;
+    return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
 // Format date to readable string

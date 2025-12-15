@@ -31,7 +31,7 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 app.use('/admin', express.static(path.join(__dirname, '../frontend/admin')));
 
 app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/admin/login.html'));
+    res.sendFile(path.join(__dirname, '../frontend/admin/index.html'));
 });
 
 // Root route - Serve Employee Portal Index (was frontend/index.html)

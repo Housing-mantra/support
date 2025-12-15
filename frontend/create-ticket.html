@@ -167,15 +167,12 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
-                                        for="category">Category</label>
+                                        for="category">Department</label>
                                     <select
                                         class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary focus:ring-opacity-50 sm:text-sm py-3 pl-4 pr-10"
                                         id="category" name="category">
-                                        <option value="IT Support">Hardware Issue</option>
-                                        <option value="IT Support">Software Installation</option>
-                                        <option value="IT Support">Network / Wi-Fi</option>
-                                        <option value="Security">Access / Login</option>
-                                        <option value="Human Resources">HR Inquiry</option>
+                                        <option value="IT Support">IT Support (Admin)</option>
+                                        <option value="ERP Support">ERP Support (Lead)</option>
                                         <option value="Other">Other</option>
                                     </select>
                                 </div>
@@ -277,7 +274,7 @@
                 class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                 <span class="material-icons-outlined">close</span>
             </button>
-            <div class="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
+            <div id="authTabs" class="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
                 <button id="loginTab" onclick="switchAuthTab('login')"
                     class="pb-3 px-4 font-semibold text-primary border-b-2 border-primary">Login</button>
                 <button id="signupTab" onclick="switchAuthTab('signup')"
@@ -374,6 +371,7 @@
                 formData.append('mobile', employee.mobile);
 
                 // Ticket details
+                formData.append('subject', document.getElementById('subject').value);
                 formData.append('description', document.getElementById('description').value);
                 formData.append('priority', document.getElementById('priority').value);
                 formData.append('issueType', document.getElementById('category').value); // Backend expects issueType

@@ -296,13 +296,13 @@ const Router = {
 };
 
 // ========== Logout Helper ==========
-function logout(redirectUrl = '/admin/login.html') {
+function logout(redirectUrl = '/admin/') {
     Storage.clear();
     Router.navigate(redirectUrl);
 }
 
 // ========== Check Authentication ==========
-function checkAuth(redirectUrl = '/admin/login.html') {
+function checkAuth(redirectUrl = '/admin/') {
     const token = Storage.getToken();
     const user = Storage.getUser();
 

@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema({
         default: 'admin',
         enum: ['admin'] // Simplified role
     },
+    department: {
+        type: String,
+        default: 'Admin' // Admin sees all, specific depts see theirs
+    },
 
     isEmailVerified: {
         type: Boolean,

@@ -26,10 +26,14 @@ const ticketSchema = new mongoose.Schema({
         required: true
     },
     employeeMobile: String,
+    subject: {
+        type: String,
+        required: [true, 'Subject is required'],
+        trim: true
+    },
     project: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Project',
-        required: true
+        ref: 'Project'
     },
     issueType: {
         type: String,

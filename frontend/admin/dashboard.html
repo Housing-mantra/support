@@ -245,8 +245,8 @@
     <script src="/shared/js/api.js"></script>
     <script>
         // Check authentication
-        if (!checkAuth()) {
-            Router.navigate('/admin/login.html');
+        if (!checkAuth('/admin/')) {
+            Router.navigate('/admin/');
         }
 
         const user = Storage.getUser();
@@ -391,8 +391,8 @@
 
         // Logout function
         function logout() {
-            Storage.clearAll();
-            Router.navigate('/admin/login.html');
+            Storage.clear();
+            Router.navigate('/admin/');
         }
 
         // Initialize

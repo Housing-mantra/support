@@ -213,7 +213,7 @@
       </button>
 
       <!-- Tabs -->
-      <div class="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
+      <div id="authTabs" class="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
         <button id="loginTab" onclick="switchAuthTab('login')"
           class="pb-3 px-4 font-semibold text-primary border-b-2 border-primary">
           Login
@@ -338,6 +338,12 @@
         document.getElementById('logoutBtn').classList.remove('hidden');
         document.querySelector('#authModal h2').textContent = `Hello, ${employee.name}!`;
         document.querySelector('#authModal p').textContent = `Employee ID: ${employee.employeeId}`;
+
+        // Hide auth tabs explicitly
+        const authTabs = document.getElementById('authTabs');
+        if (authTabs) {
+          authTabs.classList.add('hidden');
+        }
       } else {
         // If not logged in, ensure login form is visible and logout is hidden
         document.getElementById('loginForm').classList.remove('hidden');
@@ -346,6 +352,12 @@
         document.querySelector('#authModal h2').textContent = `Welcome Back!`;
         document.querySelector('#authModal p').textContent = `Login with your Employee ID`;
         switchAuthTab('login'); // Ensure login tab is active
+
+        // Show auth tabs when logged out
+        const authTabs = document.getElementById('authTabs');
+        if (authTabs) {
+          authTabs.classList.remove('hidden');
+        }
       }
     }
 

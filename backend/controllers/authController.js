@@ -8,6 +8,8 @@ const { sendVerificationEmail, sendOTPEmail } = require('../utils/emailService')
 // @access  Public (for super admin) / Protected (for company admin)
 exports.register = async (req, res) => {
     try {
+        const { name, email, password, mobile } = req.body;
+
         // Create user
         const userData = {
             name,
