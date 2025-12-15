@@ -7,9 +7,6 @@ const connectDB = require('./config/database');
 // Initialize app
 const app = express();
 
-// Connect to database
-connectDB();
-
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -84,20 +81,27 @@ app.use((req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`
+
+// Connect to database and then start server
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log(`
 ║                                                       ║
 ║   🎫 HELPDESK SYSTEM (Single Tenant)                 ║
 ║                                                       ║
-║   Server running on: http://localhost:${PORT}         ║
+║   Server running on port: ${PORT}                     ║
 ║   Environment: ${process.env.NODE_ENV || 'development'}                              ║
 ║                                                       ║
 ║   📡 API Endpoints:                                   ║
-║   - Admin Portal: http://localhost:${PORT}/admin      ║
-║   - Employee Portal: http://localhost:${PORT}/employee-portal ║
+║   - Admin Portal: /admin                              ║
+║   - Employee Portal: /                                ║
 ║                                                       ║
 ╚═══════════════════════════════════════════════════════╝
-  `);
+      `);
+    });
+}).catch(err => {
+    console.error('Failed to connect to Database. Server shutting down.', err);
+    process.exit(1);
 });
 
 // Handle unhandled promise rejections
