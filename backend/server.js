@@ -104,29 +104,25 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 3000;
 
 // Connect to database and then start server
+// Connect to database and then start server
 if (require.main === module) {
+    // 1. Start Server IMMEDIATELY to satisfy Hostinger Health Checks
+    const server = app.listen(PORT, () => {
+        console.log('-----------------------------------');
+        console.log(`✅ Server is running on port: ${PORT}`);
+        console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log('-----------------------------------');
+    });
+
+    // 2. Connect to Database in Background
     connectDB().then(() => {
-        app.listen(PORT, () => {
-            console.log(`
-║                                                       ║
-║   🎫 HELPDESK SYSTEM (Single Tenant)                 ║
-║                                                       ║
-║   Server running on port: ${PORT}                     ║
-║   Environment: ${process.env.NODE_ENV || 'development'}                              ║
-║                                                       ║
-║   📡 API Endpoints:                                   ║
-║   - Admin Portal: /admin                              ║
-║   - Employee Portal: /                                ║
-║                                                       ║
-╚═══════════════════════════════════════════════════════╝
-          `);
-        });
+        console.log('✅ Database connected successfully after server start');
     }).catch(err => {
-        console.error('Failed to connect to Database. Server shutting down.', err);
-        process.exit(1);
+        console.error('❌ Failed to connect to Database (Background process):', err);
+        // Do NOT exit process, just log error so server stays alive for logs
     });
 } else {
-    // For Serverless environment (Vercel)
+    // For Serverless environment
     connectDB();
 }
 
