@@ -17,7 +17,17 @@ const connectDB = async () => {
       bufferCommands: true, // Allow Mongoose to buffer commands until connected
     };
 
+
+    // CHECK IF URI IS DEFINED
+    if (!process.env.MONGODB_URI) {
+      console.error('❌ FATAL ERROR: MONGODB_URI environment variable is not defined.');
+      throw new Error('MONGODB_URI environment variable is not defined');
+    }
+
     console.log('Connecting to MongoDB...');
+    // Log masked URI for debugging (show first 15 chars)
+    console.log(`Debug URI: ${process.env.MONGODB_URI.substring(0, 15)}...`);
+
     cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
       console.log('✅ MongoDB Connected');
       return mongoose;

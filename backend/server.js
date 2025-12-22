@@ -7,6 +7,17 @@ const connectDB = require('./config/database');
 // Initialize app
 const app = express();
 
+console.log('-----------------------------------');
+console.log('🚀 Starting Server...');
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`PORT Variable: ${process.env.PORT}`);
+console.log('-----------------------------------');
+
+// Health Check Route (No DB dependency)
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', server_time: new Date() });
+});
+
 // Middleware to ensure DB is connected (especially for Serverless)
 app.use(async (req, res, next) => {
     if (require.main !== module) {
