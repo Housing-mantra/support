@@ -54,7 +54,16 @@ app.get('/admin', (req, res) => {
 
 // Root route - Serve Employee Portal Index (was frontend/index.html)
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+    console.log('📄 Root route hit - sending index.html');
+    const indexPath = path.join(__dirname, '../frontend/index.html');
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            console.error('❌ Frontend Error:', err);
+            res.status(500).send(`<h1>Startup Error</h1><p>Failed to load frontend.</p><pre>${err.message}</pre><p>Path: ${indexPath}</p>`);
+        } else {
+            console.log('✅ index.html sent successfully');
+        }
+    });
 });
 
 // Error handling middleware
