@@ -52,18 +52,19 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/admin/index.html'));
 });
 
-// Root route - Serve Employee Portal Index (was frontend/index.html)
+// Root route - Serve Employee Portal Index
 app.get('/', (req, res) => {
-    console.log('📄 Root route hit - sending index.html');
-    const indexPath = path.join(__dirname, '../frontend/index.html');
-    res.sendFile(indexPath, (err) => {
-        if (err) {
-            console.error('❌ Frontend Error:', err);
-            res.status(500).send(`<h1>Startup Error</h1><p>Failed to load frontend.</p><pre>${err.message}</pre><p>Path: ${indexPath}</p>`);
-        } else {
-            console.log('✅ index.html sent successfully');
-        }
-    });
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
+// Handle 404 for API routes
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ success: false, message: 'API Route not found' });
+});
+
+// Catch-all for frontend (SKA - Single Page App style fallback if needed, but simple file serving is better here)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 // Error handling middleware

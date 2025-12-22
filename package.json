@@ -4,8 +4,8 @@
   "description": "Helpdesk Ticket Management System",
   "main": "backend/server.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
   },
   "keywords": [
     "helpdesk",
@@ -31,6 +31,6 @@
     "nodemon": "^3.0.2"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": "20.x"
   }
 }
