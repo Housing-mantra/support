@@ -33,6 +33,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// DEBUG LOGGER
+app.use((req, res, next) => {
+    console.log(`👉 [${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+    console.log('Body:', JSON.stringify(req.body).substring(0, 100));
+    next();
+});
+
 // Serve static files (uploads)
 app.use('/uploads', express.static(process.env.UPLOAD_DIR || path.join(__dirname, '../uploads')));
 
