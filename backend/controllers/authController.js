@@ -56,12 +56,10 @@ exports.register = async (req, res) => {
 // @access  Public
 exports.login = async (req, res) => {
     try {
-        console.log('Login attempt for:', req.body.email); // Debug Log
         const { email, password } = req.body;
 
         // Validate input
         if (!email || !password) {
-            console.log('Missing email/password');
             return res.status(400).json({
                 success: false,
                 message: 'Please provide email and password'
