@@ -14,7 +14,9 @@ const connectDB = async () => {
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: true, // Allow Mongoose to buffer commands until connected
+      bufferCommands: false, // Don't buffer, fail fast if not connected
+      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     };
 
 
